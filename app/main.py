@@ -14,6 +14,16 @@ app = FastAPI(title="PhishGuard Gateway")
 def on_startup():
     models.Base.metadata.drop_all(bind=engine)
     models.Base.metadata.create_all(bind=engine)
+    
+    import sqlite3
+    try:
+        conn = sqlite3.connect("phishguard.db")
+        cursor = conn.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS phishtank_urls (url TEXT PRIMARY KEY)")
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Failed to create phishtank_urls table: {e}")
 
 # Include routers
 app.include_router(auth.router)

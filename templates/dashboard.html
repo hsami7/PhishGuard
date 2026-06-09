@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | PhishGuard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative">
+    
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-white tracking-tight">Analysis Dashboard</h1>
+        <p class="text-slate-400 mt-1">Submit email metadata below to heuristically determine its risk profile.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Input Form -->
+        <div class="glass-panel rounded-2xl p-6 shadow-xl">
+            <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                Email Payload
+            </h2>
+            
+            <form id="analysis-form" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Sender Address</label>
+                    <input id="sender" type="text" class="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white placeholder-slate-500 transition-all outline-none" placeholder="e.g., support@paypal.com">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Subject</label>
+                    <input id="subject" type="text" class="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white placeholder-slate-500 transition-all outline-none" placeholder="e.g., URGENT: Account Locked">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Email Body Text</label>
+                    <textarea id="body" rows="4" class="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white placeholder-slate-500 transition-all outline-none" placeholder="Paste the raw text content here..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Extracted URLs</label>
+                    <textarea id="urls" rows="2" class="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white placeholder-slate-500 transition-all outline-none" placeholder="e.g., http://example.com, http://test.com"></textarea>
+                    <p class="text-xs text-slate-500 mt-1">Extracted URLs (separated by commas).</p>
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="button" id="clear-btn" class="w-1/3 flex justify-center items-center py-3 px-4 rounded-lg text-sm font-bold text-white bg-slate-700 hover:bg-slate-600 border border-slate-600 transition-all duration-300">
+                        Clear
+                    </button>
+                    <button type="submit" id="submit-btn" class="w-2/3 flex justify-center items-center py-3 px-4 rounded-lg text-sm font-bold text-slate-900 bg-cyan-400 hover:bg-cyan-300 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all duration-300">
+                        Run Analysis
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Result Card -->
+        <div class="flex flex-col">
+            <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2 px-1">
+                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                Heuristic Result
+            </h2>
+            
+            <div id="result-container" class="glass-panel rounded-2xl p-8 flex-grow flex flex-col items-center justify-center text-center border border-slate-700 transition-all duration-500 shadow-2xl">
+                
+                <div id="placeholder-state" class="opacity-50">
+                    <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <p class="text-slate-400 text-sm">Submit an email to view the heuristic score.</p>
+                </div>
+
+                <div id="active-state" class="hidden w-full">
+                    <!-- Dynamic Ring -->
+                    <div class="relative w-40 h-40 mx-auto mb-6 flex items-center justify-center">
+                        <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
+                            <circle id="score-ring" class="transition-all duration-1000 ease-out" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
+                        </svg>
+                        <div class="flex flex-col items-center z-10 relative">
+                            <span id="numeric-score" class="text-4xl font-black text-white">0</span>
+                            <span class="text-xs text-slate-400 uppercase tracking-widest mt-1">Score</span>
+                        </div>
+                    </div>
+
+                    <h3 id="score-level" class="text-2xl font-bold mb-2">Analyzing...</h3>
+                    
+                    <div class="mt-6 text-left w-full bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Justification Log</p>
+                        <ul id="justification-list" class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="mt-12 glass-panel rounded-2xl p-6 shadow-xl">
+        <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Recent Analyses
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-700/50">
+                        <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Date</th>
+                        <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Sender</th>
+                        <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Subject</th>
+                        <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Score</th>
+                    </tr>
+                </thead>
+                <tbody id="history-tbody" class="text-sm text-slate-300">
+                    <!-- Dynamic rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+        } else {
+            loadHistory();
+        }
+    });
+
+    async function loadHistory() {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch('/analysis/history', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderHistory(data);
+            }
+        } catch (e) {
+            console.error("Failed to load history", e);
+        }
+    }
+
+    function renderHistory(records) {
+        const tbody = document.getElementById('history-tbody');
+        tbody.innerHTML = '';
+        records.forEach(rec => {
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors";
+            
+            const date = new Date(rec.created_at).toLocaleString();
+            let scoreColor = 'text-emerald-400';
+            if (rec.score_level === 'High') scoreColor = 'text-rose-400';
+            else if (rec.score_level === 'Medium') scoreColor = 'text-amber-400';
+
+            tr.innerHTML = `
+                <td class="py-3 px-4 whitespace-nowrap text-slate-400 text-xs">${date}</td>
+                <td class="py-3 px-4 font-medium">${rec.sender}</td>
+                <td class="py-3 px-4 truncate max-w-xs">${rec.subject}</td>
+                <td class="py-3 px-4 font-bold ${scoreColor}">${rec.score_level} (${rec.numeric_score})</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        document.getElementById('sender').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('body').value = '';
+        document.getElementById('urls').value = '';
+        
+        document.getElementById('active-state').classList.add('hidden');
+        document.getElementById('placeholder-state').classList.remove('hidden');
+        document.getElementById('result-container').className = 'glass-panel rounded-2xl p-8 flex-grow flex flex-col items-center justify-center text-center border border-slate-700 transition-all duration-500 shadow-2xl';
+    });
+
+    document.getElementById('analysis-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const btn = document.getElementById('submit-btn');
+        btn.textContent = 'Analyzing...';
+        btn.disabled = true;
+
+        const sender = document.getElementById('sender').value || '';
+        const subject = document.getElementById('subject').value || '';
+        const text_content = document.getElementById('body').value || '';
+        const urlsRaw = document.getElementById('urls').value || '';
+        
+        // Parse URLs by commas
+        const urls = urlsRaw.split(',').map(u => u.trim()).filter(u => u.length > 0);
+
+        try {
+            const res = await fetch('/analysis/', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ sender, subject, text_content, urls })
+            });
+
+            if (res.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                return;
+            }
+
+            if (!res.ok) {
+                throw new Error('Analysis failed');
+            }
+
+            const data = await res.json();
+            renderScore(data.score_level, data.numeric_score, data.justification);
+            loadHistory();
+        } catch (err) {
+            alert('Failed to analyze email. Is the backend running?');
+        } finally {
+            btn.textContent = 'Run Analysis';
+            btn.disabled = false;
+        }
+    });
+
+    function renderScore(level, numScore, justification) {
+        document.getElementById('placeholder-state').classList.add('hidden');
+        document.getElementById('active-state').classList.remove('hidden');
+
+        const container = document.getElementById('result-container');
+        const ring = document.getElementById('score-ring');
+        const levelText = document.getElementById('score-level');
+        const numText = document.getElementById('numeric-score');
+        const justList = document.getElementById('justification-list');
+
+        container.className = 'glass-panel rounded-2xl p-8 flex-grow flex flex-col items-center justify-center text-center border transition-all duration-500 shadow-2xl';
+        levelText.className = 'text-2xl font-bold mb-2';
+        ring.className.baseVal = 'transition-all duration-1000 ease-out';
+
+        const cappedScore = Math.min(100, numScore);
+        const offset = 264 - (264 * (cappedScore / 100));
+        
+        setTimeout(() => {
+            ring.style.strokeDashoffset = offset;
+        }, 50);
+        
+        let currentNum = 0;
+        const interval = setInterval(() => {
+            if (currentNum >= cappedScore) {
+                numText.textContent = cappedScore;
+                clearInterval(interval);
+            } else {
+                currentNum += Math.ceil((cappedScore - currentNum) / 5) || 1;
+                numText.textContent = currentNum;
+            }
+        }, 30);
+
+        levelText.textContent = level;
+
+        if (level === 'High') {
+            container.classList.add('border-rose-500/50', 'bg-rose-500/5', 'shadow-[0_0_40px_rgba(244,63,94,0.15)]');
+            levelText.classList.add('text-rose-400');
+            ring.classList.add('text-rose-500');
+        } else if (level === 'Medium') {
+            container.classList.add('border-amber-500/50', 'bg-amber-500/5', 'shadow-[0_0_40px_rgba(245,158,11,0.15)]');
+            levelText.classList.add('text-amber-400');
+            ring.classList.add('text-amber-500');
+        } else {
+            container.classList.add('border-emerald-500/50', 'bg-emerald-500/5', 'shadow-[0_0_40px_rgba(16,185,129,0.15)]');
+            levelText.classList.add('text-emerald-400');
+            ring.classList.add('text-emerald-500');
+        }
+
+        justList.innerHTML = '';
+        if (justification) {
+            const reasons = justification.split(', ');
+            reasons.forEach(r => {
+                if (r.trim()) {
+                    const li = document.createElement('li');
+                    li.textContent = r.trim();
+                    justList.appendChild(li);
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}

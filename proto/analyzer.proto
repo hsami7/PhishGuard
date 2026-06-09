@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package analyzer;
+
+service AnalysisService {
+  rpc AnalyzeEmail (EmailRequest) returns (AnalyzeResponse) {}
+}
+
+message EmailRequest {
+  string sender = 1;
+  string subject = 2;
+  string text_content = 3;
+  repeated string urls = 4;
+}
+
+message AnalyzeResponse {
+  string score_level = 1; // "Low", "Medium", "High"
+  int32 numeric_score = 2;
+  string justification = 3;
+}

@@ -8,6 +8,15 @@ A lightweight, distributed phishing email detection system. It allows users to s
 
 Accurate, explainable phishing detection achieved through a robust distributed architecture and strict cybersecurity practices without the overhead of heavy SPA frameworks or paid APIs.
 
+## Current Milestone: v2.0 Intelligent Automation & UI-UX Pro-Max
+
+**Goal:** Integration of automated raw email parsing, regex link harvesting, and a single-field glassmorphism dashboard layout.
+
+**Target features:**
+- Automated raw email parsing
+- Regex link harvesting
+- Single-field glassmorphism dashboard layout
+
 ## Requirements
 
 ### Validated
@@ -70,4 +79,4 @@ This document evolves at phase transitions and milestone boundaries.
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 ---
-*Last updated: 2026-06-09 after Phase 08*
+*Last updated: 2026-06-09 at the start of Milestone v2.0*

@@ -3,6 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-8 (shipped 2026-06-09)
+- 🚧 **v2.0 Intelligent Automation & UI-UX Pro-Max** — Phases 9-10 (in progress)
 
 ## Phases
 
@@ -20,6 +21,11 @@
 
 </details>
 
+### 🚧 v2.0 Intelligent Automation & UI-UX Pro-Max (In Progress)
+
+- [ ] Phase 9: Automated Email Parsing Engine (1 plans)
+- [ ] Phase 10: Glassmorphism Dashboard Integration (1 plans)
+
 ## Progress
 
 | Phase             | Milestone | Status      | Completed  |
@@ -32,3 +38,5 @@
 | 6. Audit Logging  | v1.0      | Complete    | 2026-06-09 |
 | 7. Close gaps     | v1.0      | Complete    | 2026-06-09 |
 | 8. Enhance        | v1.0      | Complete    | 2026-06-09 |
+| 9. Email Parsing  | v2.0      | Not started | -          |
+| 10. Glassmorphism | v2.0      | Not started | -          |

@@ -20,3 +20,8 @@
 ## Traceability
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
+| PARSE-01 | Phase 9 | Pending |
+| PARSE-02 | Phase 9 | Pending |
+| PARSE-03 | Phase 9 | Pending |
+| UI-04 | Phase 10 | Pending |
+| UI-05 | Phase 10 | Pending |

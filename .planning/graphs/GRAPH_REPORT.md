@@ -1,16 +1,16 @@
 # Graph Report - PhishGuard  (2026-06-10)
 
 ## Corpus Check
-- 85 files · ~19,947 words
+- 88 files · ~93,584 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 515 nodes · 531 edges · 73 communities (64 shown, 9 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 32 edges (avg confidence: 0.5)
+- 586 nodes · 601 edges · 75 communities (66 shown, 9 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 32 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `64e68a7d`
+- Built from commit: `bf3bde68`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -83,18 +83,20 @@
 - [[_COMMUNITY_Community 65|Community 65]]
 - [[_COMMUNITY_Community 66|Community 66]]
 - [[_COMMUNITY_Community 68|Community 68]]
+- [[_COMMUNITY_Community 73|Community 73]]
+- [[_COMMUNITY_Community 74|Community 74]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `User` - 15 edges
-2. `parse_email()` - 10 edges
-3. `EmailAnalyzer` - 9 edges
-4. `PhishGuard` - 9 edges
-5. `UserCreate` - 7 edges
-6. `UserResponse` - 7 edges
-7. `Token` - 7 edges
-8. `EmailAnalysisResponse` - 7 edges
-9. `Phase 08: enhance-phishtank-intel-url-unshortener-advanced-spoofing-de - Context` - 7 edges
-10. `Phase 08 — Validation Strategy` - 7 edges
+1. `Communities (73 total, 9 thin omitted)` - 60 edges
+2. `User` - 15 edges
+3. `Graph Report - PhishGuard  (2026-06-10)` - 11 edges
+4. `parse_email()` - 10 edges
+5. `EmailAnalyzer` - 9 edges
+6. `PhishGuard` - 9 edges
+7. `UserCreate` - 7 edges
+8. `UserResponse` - 7 edges
+9. `Token` - 7 edges
+10. `EmailAnalysisResponse` - 7 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `analyze_email()` --calls--> `parse_email()`  [EXTRACTED]
@@ -111,7 +113,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (73 total, 9 thin omitted)
+## Communities (75 total, 9 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.13
@@ -349,22 +351,30 @@ Nodes (3): Milestones, v1.0 MVP (Shipped: 2026-06-09), v1.0 v1.0 MVP (Shipped: 2
 Cohesion: 0.50
 Nodes (3): Current Position, Operator Next Steps, Performance Metrics
 
+### Community 73 - "Community 73"
+Cohesion: 0.03
+Nodes (60): Communities (73 total, 9 thin omitted), Community 0 - "Community 0", Community 10 - "Community 10", Community 11 - "Community 11", Community 12 - "Community 12", Community 13 - "Community 13", Community 14 - "Community 14", Community 15 - "Community 15" (+52 more)
+
+### Community 74 - "Community 74"
+Cohesion: 0.18
+Nodes (10): Community Hubs (Navigation), Corpus Check, God Nodes (most connected - your core abstractions), Graph Freshness, Graph Report - PhishGuard  (2026-06-10), Import Cycles, Knowledge Gaps, Suggested Questions (+2 more)
+
 ## Knowledge Gaps
-- **255 isolated node(s):** `Any`, `User`, `Config`, `generate_proto.sh script`, `v1.0 MVP (Shipped: 2026-06-09)` (+250 more)
+- **323 isolated node(s):** `Any`, `User`, `Config`, `generate_proto.sh script`, `v1.0 MVP (Shipped: 2026-06-09)` (+318 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `parse_email()` connect `Community 21` to `Community 0`?**
-  _High betweenness centrality (0.003) - this node is a cross-community bridge._
+- **Why does `Communities (73 total, 9 thin omitted)` connect `Community 73` to `Community 74`?**
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
+- **Why does `Graph Report - PhishGuard  (2026-06-10)` connect `Community 74` to `Community 73`?**
+  _High betweenness centrality (0.004) - this node is a cross-community bridge._
 - **Are the 10 inferred relationships involving `User` (e.g. with `Session` and `User`) actually correct?**
   _`User` has 10 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 4 inferred relationships involving `UserCreate` (e.g. with `Session` and `User`) actually correct?**
-  _`UserCreate` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Any`, `Parses a raw .eml string and extracts headers, body text, and links.     Uses be`, `User` to the rest of the system?**
-  _261 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _329 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.13170731707317074 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**

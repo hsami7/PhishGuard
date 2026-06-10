@@ -12,7 +12,6 @@ app = FastAPI(title="PhishGuard Gateway")
 # 2. Maintenant on peut utiliser le décorateur @app sans NameError
 @app.on_event("startup")
 def on_startup():
-    models.Base.metadata.drop_all(bind=engine)
     models.Base.metadata.create_all(bind=engine)
     
     import sqlite3

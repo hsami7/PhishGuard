@@ -95,6 +95,48 @@ class EmailAnalyzer:
                 return True, f"Display name mimics brand '{brand}' but domain does not match"
                 
         return False, ""
+
+    def _levenshtein_distance(self, s1: str, s2: str) -> int:
+        if len(s1) < len(s2):
+            return self._levenshtein_distance(s2, s1)
+        if len(s2) == 0:
+            return len(s1)
+        
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+            
+        return previous_row[-1]
+
+    def _detect_typosquatting(self, sender: str) -> tuple[bool, str]:
+        display_name, email_addr = email.utils.parseaddr(sender)
+        if not email_addr or '@' not in email_addr:
+            return False, ""
+        
+        domain_full = email_addr.split('@')[-1].lower()
+        domain_parts = domain_full.split('.')
+        if len(domain_parts) < 2:
+            return False, ""
+        
+        high_profile_brands = ['paypal', 'apple', 'microsoft', 'google', 'amazon', 'chase', 'netflix']
+        for part in domain_parts:
+            # Skip common short TLDs/subdomains
+            if part in ['com', 'org', 'net', 'edu', 'gov', 'co', 'uk', 'io', 'info', 'biz', 'us', 'www', 'mail', 'email']:
+                continue
+            for brand in high_profile_brands:
+                if part == brand:
+                    continue  # Perfect match
+                
+                dist = self._levenshtein_distance(part, brand)
+                if dist in [1, 2]:
+                    return True, f"Domain part '{part}' typosquats high-profile brand '{brand}' (edit distance: {dist})"
+        return False, ""
     
     def analyze(self, sender: str, subject: str, text_content: str, urls: list[str]):
         score = 0
@@ -109,6 +151,12 @@ class EmailAnalyzer:
         if is_spoofed:
             score += 40
             justifications.append(spoof_justification)
+
+        # Typosquatting Detection
+        is_typosquat, typosquat_justification = self._detect_typosquatting(sender)
+        if is_typosquat:
+            score += 40
+            justifications.append(typosquat_justification)
 
         # Sender Heuristics
         for tld in self.suspicious_tlds:

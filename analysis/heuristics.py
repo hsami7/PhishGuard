@@ -2,11 +2,60 @@ import re
 import requests
 import sqlite3
 import email.utils
+import pickle
+import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class EmailAnalyzer:
     def __init__(self):
         self.suspicious_tlds = ['.xyz', '.top', '.click', '.club', '.ru', '.cn']
         self.urgency_keywords = ['urgent', 'immediate', 'password', 'bank', 'suspend', 'action required', 'verify', 'account closure']
+        
+        # Load ML model and vectorizer
+        self.ml_model = None
+        self.ml_vectorizer = None
+        self._load_ml_model()
+    
+    def _load_ml_model(self):
+        """Load the trained ML classifier and TF-IDF vectorizer from disk."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(current_dir, "email_classifier.pkl")
+        vectorizer_path = os.path.join(current_dir, "vectorizer.pkl")
+        
+        try:
+            with open(model_path, "rb") as f:
+                self.ml_model = pickle.load(f)
+            with open(vectorizer_path, "rb") as f:
+                self.ml_vectorizer = pickle.load(f)
+            logger.info("ML email classifier loaded successfully.")
+        except FileNotFoundError:
+            logger.warning("ML model files not found. ML predictions will be skipped.")
+        except Exception as e:
+            logger.error(f"Failed to load ML model: {e}")
+    
+    def _ml_predict(self, text: str) -> dict:
+        """Use the ML model to predict if the email text is spam/phishing.
+        
+        Returns a dict with 'is_spam' (bool), 'confidence' (float 0-1),
+        or None if the model is not available.
+        """
+        if self.ml_model is None or self.ml_vectorizer is None:
+            return None
+        
+        try:
+            text_vec = self.ml_vectorizer.transform([text])
+            prediction = self.ml_model.predict(text_vec)[0]
+            probabilities = self.ml_model.predict_proba(text_vec)[0]
+            spam_confidence = probabilities[1]  # probability of class 1 (spam)
+            return {
+                "is_spam": bool(prediction == 1),
+                "confidence": round(float(spam_confidence), 4)
+            }
+        except Exception as e:
+            logger.error(f"ML prediction failed: {e}")
+            return None
     
     def _unshorten_url(self, url: str) -> str:
         try:
@@ -105,6 +154,21 @@ class EmailAnalyzer:
                 score += 40
                 justifications.append("URL contains raw IP address")
                 break
+
+        # ML-based Classification
+        combined_text = f"Subject: {subject}\n{text_content}"
+        ml_result = self._ml_predict(combined_text)
+        if ml_result:
+            if ml_result["is_spam"] and ml_result["confidence"] >= 0.7:
+                ml_score = int(ml_result["confidence"] * 30)
+                score += ml_score
+                justifications.append(
+                    f"ML classifier: Phishing detected ({ml_result['confidence']*100:.1f}% confidence)"
+                )
+            elif not ml_result["is_spam"] and ml_result["confidence"] < 0.3:
+                justifications.append(
+                    f"ML classifier: Likely legitimate ({(1 - ml_result['confidence'])*100:.1f}% confidence)"
+                )
 
         # Cap score at 100
         score = min(score, 100)

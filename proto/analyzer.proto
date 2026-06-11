@@ -3,7 +3,7 @@ syntax = "proto3";
 package analyzer;
 
 service AnalysisService {
-  rpc AnalyzeEmail (EmailRequest) returns (AnalyzeResponse) {}
+  rpc AnalyzeEmail(EmailRequest) returns (AnalyzeResponse);
 }
 
 message EmailRequest {
@@ -14,7 +14,10 @@ message EmailRequest {
 }
 
 message AnalyzeResponse {
-  string score_level = 1; // "Low", "Medium", "High"
-  int32 numeric_score = 2;
-  string justification = 3;
+  string category = 1;           // "phishing" | "legitimate" | "spam_junk"
+  string score_level = 2;        // "Low" | "Medium" | "High"
+  int32 numeric_score = 3;       // 0-100
+  string justification = 4;      // pipe-delimited summary
+  string explanation_json = 5;   // JSON string of structured explanation
+  string explanation_text = 6;   // human-readable paragraph
 }

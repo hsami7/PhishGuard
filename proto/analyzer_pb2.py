@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14proto/analyzer.proto\x12\x08\x61nalyzer\"S\n\x0c\x45mailRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x0f\n\x07subject\x18\x02 \x01(\t\x12\x14\n\x0ctext_content\x18\x03 \x01(\t\x12\x0c\n\x04urls\x18\x04 \x03(\t\"T\n\x0f\x41nalyzeResponse\x12\x13\n\x0bscore_level\x18\x01 \x01(\t\x12\x15\n\rnumeric_score\x18\x02 \x01(\x05\x12\x15\n\rjustification\x18\x03 \x01(\t2V\n\x0f\x41nalysisService\x12\x43\n\x0c\x41nalyzeEmail\x12\x16.analyzer.EmailRequest\x1a\x19.analyzer.AnalyzeResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14proto/analyzer.proto\x12\x08\x61nalyzer\"S\n\x0c\x45mailRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x0f\n\x07subject\x18\x02 \x01(\t\x12\x14\n\x0ctext_content\x18\x03 \x01(\t\x12\x0c\n\x04urls\x18\x04 \x03(\t\"\x9a\x01\n\x0f\x41nalyzeResponse\x12\x10\n\x08\x63\x61tegory\x18\x01 \x01(\t\x12\x13\n\x0bscore_level\x18\x02 \x01(\t\x12\x15\n\rnumeric_score\x18\x03 \x01(\x05\x12\x15\n\rjustification\x18\x04 \x01(\t\x12\x18\n\x10\x65xplanation_json\x18\x05 \x01(\t\x12\x18\n\x10\x65xplanation_text\x18\x06 \x01(\t2T\n\x0f\x41nalysisService\x12\x41\n\x0c\x41nalyzeEmail\x12\x16.analyzer.EmailRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,8 +33,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_EMAILREQUEST']._serialized_start=34
   _globals['_EMAILREQUEST']._serialized_end=117
-  _globals['_ANALYZERESPONSE']._serialized_start=119
-  _globals['_ANALYZERESPONSE']._serialized_end=203
-  _globals['_ANALYSISSERVICE']._serialized_start=205
-  _globals['_ANALYSISSERVICE']._serialized_end=291
+  _globals['_ANALYZERESPONSE']._serialized_start=120
+  _globals['_ANALYZERESPONSE']._serialized_end=274
+  _globals['_ANALYSISSERVICE']._serialized_start=276
+  _globals['_ANALYSISSERVICE']._serialized_end=360
 # @@protoc_insertion_point(module_scope)

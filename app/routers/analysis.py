@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 import grpc
 import sys
 import os
+import json
 from typing import List
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
 
-# Ensure proto imports work
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from app.schemas import EmailAnalysisRequest, EmailAnalysisResponse, AnalysisHistoryResponse
@@ -35,30 +35,41 @@ def analyze_email(request: EmailAnalysisRequest, current_user: User = Depends(ge
         logger.info(f"User '{current_user.username}' requested analysis for sender: {sender}")
         with grpc.insecure_channel('localhost:50051') as channel:
             stub = analyzer_pb2_grpc.AnalysisServiceStub(channel)
-            
+
             grpc_req = analyzer_pb2.EmailRequest(
                 sender=sender,
                 subject=subject,
                 text_content=text_content,
                 urls=urls
             )
-            
+
             response = stub.AnalyzeEmail(grpc_req)
-            
+
+            # Parse the structured explanation from JSON
+            explanation = {}
+            try:
+                explanation = json.loads(response.explanation_json)
+            except (json.JSONDecodeError, TypeError):
+                explanation = {}
+
             history_record = models.AnalysisHistory(
                 user_id=current_user.id,
                 sender=sender,
                 subject=subject,
+                category=response.category,
                 score_level=response.score_level,
                 numeric_score=response.numeric_score
             )
             db.add(history_record)
             db.commit()
-            
+
             return EmailAnalysisResponse(
+                category=response.category,
                 score_level=response.score_level,
                 numeric_score=response.numeric_score,
                 justification=response.justification,
+                explanation=explanation,
+                explanation_text=response.explanation_text,
                 headers=parsed["headers"],
                 urls=urls
             )

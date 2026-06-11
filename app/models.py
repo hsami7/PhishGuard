@@ -19,6 +19,7 @@ class AnalysisHistory(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     sender = Column(String)
     subject = Column(String)
+    category = Column(String, default="unknown")
     score_level = Column(String)
     numeric_score = Column(Integer)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

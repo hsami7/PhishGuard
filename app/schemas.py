@@ -27,9 +27,12 @@ class EmailAnalysisRequest(BaseModel):
     raw_email: str
 
 class EmailAnalysisResponse(BaseModel):
-    score_level: str
-    numeric_score: int
-    justification: str
+    category: str                # "phishing" | "legitimate" | "spam_junk"
+    score_level: str             # "Low" | "Medium" | "High"
+    numeric_score: int           # 0-100
+    justification: str           # pipe-delimited summary
+    explanation: dict            # structured breakdown by detection type
+    explanation_text: str        # human-readable paragraph
     headers: dict
     urls: list[str]
 
@@ -38,6 +41,7 @@ class AnalysisHistoryResponse(BaseModel):
     user_id: int
     sender: str
     subject: str
+    category: str
     score_level: str
     numeric_score: int
     created_at: datetime

@@ -36,7 +36,19 @@ def train():
     y_val = df_val["Email Type"].map(label_map).astype(int).tolist()
     print(f"Loaded {len(X_val)} validation records.")
 
-    # 3. Load Hugging Face texts.json (repaired JSON parsing)
+    # 3. Load newly downloaded Phishing_Email.csv dataset (large dataset)
+    phish_email_path = os.path.join(current_dir, "..", "data", "Phishing_Email.csv")
+    X_phish = []
+    y_phish = []
+    if os.path.exists(phish_email_path):
+        print(f"Loading large Phishing Email dataset from: {phish_email_path}")
+        df_phish = pd.read_csv(phish_email_path)
+        df_phish = df_phish.dropna(subset=["Email Text", "Email Type"])
+        X_phish = df_phish["Email Text"].tolist()
+        y_phish = df_phish["Email Type"].map(label_map).astype(int).tolist()
+        print(f"Loaded {len(X_phish)} records from Phishing Email dataset.")
+
+    # 4. Load Hugging Face texts.json (repaired JSON parsing)
     hf_path = os.path.join(current_dir, "..", "data", "texts.json")
     X_hf = []
     y_hf = []
@@ -59,8 +71,8 @@ def train():
                 print(f"Failed to parse Hugging Face dataset: {e}")
 
     # Combine datasets
-    X = X_orig + X_val + X_hf
-    y = np.array(y_orig + y_val + y_hf)
+    X = X_orig + X_val + X_phish + X_hf
+    y = np.array(y_orig + y_val + y_phish + y_hf)
     print(f"Combined dataset: Total records = {len(X)}")
     
     # Split data

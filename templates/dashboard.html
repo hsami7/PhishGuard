@@ -94,6 +94,9 @@
                     </div>
 
                     <h3 id="score-level" class="text-2xl font-bold mb-2">Analyzing...</h3>
+                    <div id="category-wrapper" class="hidden mb-3">
+                        <span id="category-badge" class="inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide"></span>
+                    </div>
 
                     <div class="mt-6 text-left w-full bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
                         <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Justification Log
@@ -140,6 +143,7 @@
                         <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Date</th>
                         <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Sender</th>
                         <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Subject</th>
+                        <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Category</th>
                         <th class="pb-3 text-xs uppercase tracking-wider text-slate-400 font-semibold px-4">Score</th>
                     </tr>
                 </thead>
@@ -188,10 +192,17 @@
             if (rec.score_level === 'High') scoreColor = 'text-rose-400';
             else if (rec.score_level === 'Medium') scoreColor = 'text-amber-400';
 
+            let catColor = 'text-slate-300';
+            const cat = (rec.category || 'unknown').toLowerCase();
+            if (cat === 'phishing') catColor = 'text-rose-300';
+            else if (cat === 'spam') catColor = 'text-amber-300';
+            else if (cat === 'legitimate') catColor = 'text-emerald-300';
+
             tr.innerHTML = `
                 <td class="py-3 px-4 whitespace-nowrap text-slate-400 text-xs">${date}</td>
                 <td class="py-3 px-4 font-medium">${rec.sender}</td>
                 <td class="py-3 px-4 truncate max-w-xs">${rec.subject}</td>
+                <td class="py-3 px-4 text-xs font-semibold ${catColor} uppercase tracking-wider">${cat}</td>
                 <td class="py-3 px-4 font-bold ${scoreColor}">${rec.score_level} (${rec.numeric_score})</td>
             `;
             tbody.appendChild(tr);
@@ -239,12 +250,24 @@
             }
 
             if (!res.ok) {
-                throw new Error('Analysis failed');
+                const errData = await res.json().catch(() => ({}));
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return;
+                }
+                if (res.status === 503) {
+                    throw new Error('Analysis service is temporarily unavailable. Please try again in a moment.');
+                }
+                if (res.status === 422) {
+                    throw new Error('Invalid email data. Please paste a complete raw email including headers.');
+                }
+                throw new Error(errData.detail || `Server error (${res.status})`);
             }
 
             const data = await res.json();
             resContainer.classList.remove('animate-pulse');
-            renderScore(data.score_level, data.numeric_score, data.justification, data.headers, data.urls);
+            renderScore(data.score_level, data.numeric_score, data.category, data.justification, data.headers, data.urls);
             loadHistory();
         } catch (err) {
             resContainer.classList.remove('animate-pulse');
@@ -256,7 +279,7 @@
         }
     });
 
-    function renderScore(level, numScore, justification, headers, urls) {
+    function renderScore(level, numScore, category, justification, headers, urls) {
         document.getElementById('placeholder-state').classList.add('hidden');
         document.getElementById('active-state').classList.remove('hidden');
 
@@ -265,44 +288,41 @@
         const levelText = document.getElementById('score-level');
         const numText = document.getElementById('numeric-score');
         const justList = document.getElementById('justification-list');
+        const catWrapper = document.getElementById('category-wrapper');
+        const catBadge = document.getElementById('category-badge');
 
         container.className = 'glass-panel rounded-2xl p-8 flex-grow flex flex-col items-center justify-center text-center border transition-all duration-500 shadow-2xl';
         levelText.className = 'text-2xl font-bold mb-2';
         ring.className.baseVal = 'transition-all duration-1000 ease-out';
 
+        const displayCategory = (category || 'unknown').toLowerCase();
+        const catColors = {
+            phishing: { bg: 'bg-rose-500/15', text: 'text-rose-300', ring: 'text-rose-500', border: 'border-rose-500/50', shadow: 'shadow-[0_0_40px_rgba(244,63,94,0.15)]' },
+            spam: { bg: 'bg-amber-500/15', text: 'text-amber-300', ring: 'text-amber-500', border: 'border-amber-500/50', shadow: 'shadow-[0_0_40px_rgba(245,158,11,0.15)]' },
+            legitimate: { bg: 'bg-emerald-500/15', text: 'text-emerald-300', ring: 'text-emerald-500', border: 'border-emerald-500/50', shadow: 'shadow-[0_0_40px_rgba(16,185,129,0.15)]' },
+            unknown: { bg: 'bg-slate-500/15', text: 'text-slate-300', ring: 'text-slate-400', border: 'border-slate-700/50', shadow: 'shadow-2xl' },
+        };
+        const theme = catColors[displayCategory] || catColors['unknown'];
+
+        if (!catWrapper.classList.contains('hidden')) catWrapper.classList.add('hidden');
+        catBadge.textContent = displayCategory;
+        catBadge.className = `inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${theme.bg} ${theme.text}`;
+        catWrapper.classList.remove('hidden');
+
         const cappedScore = Math.min(100, numScore);
         const offset = 264 - (264 * (cappedScore / 100));
-
-        setTimeout(() => {
-            ring.style.strokeDashoffset = offset;
-        }, 50);
+        setTimeout(() => { ring.style.strokeDashoffset = offset; }, 50);
 
         let currentNum = 0;
         const interval = setInterval(() => {
-            if (currentNum >= cappedScore) {
-                numText.textContent = cappedScore;
-                clearInterval(interval);
-            } else {
-                currentNum += Math.ceil((cappedScore - currentNum) / 5) || 1;
-                numText.textContent = currentNum;
-            }
+            if (currentNum >= cappedScore) { numText.textContent = cappedScore; clearInterval(interval); }
+            else { currentNum += Math.ceil((cappedScore - currentNum) / 5) || 1; numText.textContent = currentNum; }
         }, 30);
 
         levelText.textContent = level;
-
-        if (level === 'High') {
-            container.classList.add('border-rose-500/50', 'bg-rose-500/5', 'shadow-[0_0_40px_rgba(244,63,94,0.15)]');
-            levelText.classList.add('text-rose-400');
-            ring.classList.add('text-rose-500');
-        } else if (level === 'Medium') {
-            container.classList.add('border-amber-500/50', 'bg-amber-500/5', 'shadow-[0_0_40px_rgba(245,158,11,0.15)]');
-            levelText.classList.add('text-amber-400');
-            ring.classList.add('text-amber-500');
-        } else {
-            container.classList.add('border-emerald-500/50', 'bg-emerald-500/5', 'shadow-[0_0_40px_rgba(16,185,129,0.15)]');
-            levelText.classList.add('text-emerald-400');
-            ring.classList.add('text-emerald-500');
-        }
+        container.classList.add(theme.border, theme.bg.replace('/15','/5'), theme.shadow);
+        levelText.classList.add(theme.text);
+        ring.classList.add(theme.ring);
 
         justList.innerHTML = '';
         if (justification) {

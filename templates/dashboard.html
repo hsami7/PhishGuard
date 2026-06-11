@@ -4,37 +4,50 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative">
-    
+
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-white tracking-tight">Analysis Dashboard</h1>
         <p class="text-slate-400 mt-1">Submit email metadata below to heuristically determine its risk profile.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Input Form -->
-        <div class="glass-panel rounded-2xl p-6 shadow-xl">
+        <div class="glass-panel rounded-2xl p-6 shadow-xl flex flex-col h-full">
             <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                </svg>
                 Email Payload
             </h2>
-            
-            <form id="analysis-form" class="space-y-5">
-                <div>
+
+            <form id="analysis-form" class="space-y-5 flex flex-col flex-grow">
+                <div class="flex flex-col flex-grow">
                     <label class="block text-sm font-medium text-slate-300 mb-2">Raw Email Source</label>
                     <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 mb-3">
-                        <p class="text-xs text-slate-400 mb-1 font-semibold text-cyan-400">How to get the Raw Email Source:</p>
+                        <p class="text-xs text-slate-400 mb-1 font-semibold text-cyan-400">How to get the Raw Email
+                            Source:</p>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            In your email client's top menu bar, go to <span class="font-bold text-slate-300">View</span> > <span class="font-bold text-slate-300">Message</span> > <span class="font-bold text-slate-300">Show original</span> (or Raw Source), select all the text, and copy it to your clipboard.
+                            In your email client's top menu bar, go to <span
+                                class="font-bold text-slate-300">View</span> > <span
+                                class="font-bold text-slate-300">Message</span> > <span
+                                class="font-bold text-slate-300">Show original</span> (or Raw Source), select all the
+                            text, and copy it to your clipboard.
                         </p>
                     </div>
-                    <textarea id="raw_email" rows="10" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-slate-200 placeholder-slate-500 transition-all outline-none font-mono text-sm shadow-inner" placeholder="Paste the raw .eml content or email source code here..."></textarea>
+                    <textarea id="raw_email"
+                        class="w-full flex-grow px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-slate-200 placeholder-slate-500 transition-all outline-none font-mono text-sm shadow-inner min-h-[250px]"
+                        placeholder="Paste the raw .eml content or email source code here..."></textarea>
                 </div>
 
                 <div class="flex gap-4">
-                    <button type="button" id="clear-btn" class="w-1/3 flex justify-center items-center py-3 px-4 rounded-xl text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all duration-300">
+                    <button type="button" id="clear-btn"
+                        class="w-1/3 flex justify-center items-center py-3 px-4 rounded-xl text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all duration-300">
                         Clear
                     </button>
-                    <button type="submit" id="submit-btn" class="w-2/3 flex justify-center items-center py-3 px-4 rounded-xl text-sm font-bold text-slate-900 bg-cyan-400 hover:bg-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all duration-300">
+                    <button type="submit" id="submit-btn"
+                        class="w-2/3 flex justify-center items-center py-3 px-4 rounded-xl text-sm font-bold text-slate-900 bg-cyan-400 hover:bg-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all duration-300">
                         Run Analysis
                     </button>
                 </div>
@@ -44,14 +57,23 @@
         <!-- Result Card -->
         <div class="flex flex-col">
             <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2 px-1">
-                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                    </path>
+                </svg>
                 Heuristic Result
             </h2>
-            
-            <div id="result-container" class="glass-panel rounded-2xl p-8 flex-grow flex flex-col items-center justify-center text-center border border-slate-700 transition-all duration-500 shadow-2xl">
-                
+
+            <div id="result-container"
+                class="glass-panel rounded-2xl p-8 flex-grow flex flex-col items-center justify-center text-center border border-slate-700 transition-all duration-500 shadow-2xl">
+
                 <div id="placeholder-state" class="opacity-50">
-                    <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
                     <p class="text-slate-400 text-sm">Submit an email to view the heuristic score.</p>
                 </div>
 
@@ -59,8 +81,11 @@
                     <!-- Dynamic Ring -->
                     <div class="relative w-40 h-40 mx-auto mb-6 flex items-center justify-center">
                         <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                            <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
-                            <circle id="score-ring" class="transition-all duration-1000 ease-out" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
+                            <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent"
+                                r="42" cx="50" cy="50" />
+                            <circle id="score-ring" class="transition-all duration-1000 ease-out" stroke-width="8"
+                                stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"
+                                stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
                         </svg>
                         <div class="flex flex-col items-center z-10 relative">
                             <span id="numeric-score" class="text-4xl font-black text-white">0</span>
@@ -69,19 +94,25 @@
                     </div>
 
                     <h3 id="score-level" class="text-2xl font-bold mb-2">Analyzing...</h3>
-                    
+
                     <div class="mt-6 text-left w-full bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
-                        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Justification Log</p>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Justification Log
+                        </p>
                         <ul id="justification-list" class="text-sm text-slate-300 space-y-2 list-disc list-inside">
                         </ul>
                     </div>
 
-                    <div id="extracted-data" class="mt-4 text-left w-full bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 hidden">
-                        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Extracted Details</p>
+                    <div id="extracted-data"
+                        class="mt-4 text-left w-full bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 hidden">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Extracted Details
+                        </p>
                         <div class="text-sm text-slate-300 space-y-2 mb-3">
-                            <p><span class="text-slate-500">From:</span> <span id="ext-from" class="font-medium text-slate-200"></span></p>
-                            <p><span class="text-slate-500">Subject:</span> <span id="ext-subject" class="font-medium text-slate-200"></span></p>
-                            <p><span class="text-slate-500">Date:</span> <span id="ext-date" class="font-medium text-slate-200"></span></p>
+                            <p><span class="text-slate-500">From:</span> <span id="ext-from"
+                                    class="font-medium text-slate-200"></span></p>
+                            <p><span class="text-slate-500">Subject:</span> <span id="ext-subject"
+                                    class="font-medium text-slate-200"></span></p>
+                            <p><span class="text-slate-500">Date:</span> <span id="ext-date"
+                                    class="font-medium text-slate-200"></span></p>
                         </div>
                         <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Found Links</p>
                         <ul id="ext-urls" class="text-xs text-cyan-400 space-y-1 list-none truncate">
@@ -96,7 +127,10 @@
     <!-- History Table -->
     <div class="mt-12 glass-panel rounded-2xl p-6 shadow-xl">
         <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
             Recent Analyses
         </h2>
         <div class="overflow-x-auto">
@@ -148,7 +182,7 @@
         records.forEach(rec => {
             const tr = document.createElement('tr');
             tr.className = "border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors";
-            
+
             const date = new Date(rec.created_at).toLocaleString();
             let scoreColor = 'text-emerald-400';
             if (rec.score_level === 'High') scoreColor = 'text-rose-400';
@@ -166,7 +200,7 @@
 
     document.getElementById('clear-btn').addEventListener('click', () => {
         document.getElementById('raw_email').value = '';
-        
+
         document.getElementById('active-state').classList.add('hidden');
         document.getElementById('placeholder-state').classList.remove('hidden');
         document.getElementById('result-container').className = 'glass-panel rounded-2xl p-8 flex-grow flex flex-col items-center justify-center text-center border border-slate-700 transition-all duration-500 shadow-2xl';
@@ -191,7 +225,7 @@
         try {
             const res = await fetch('/analysis/', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
@@ -238,11 +272,11 @@
 
         const cappedScore = Math.min(100, numScore);
         const offset = 264 - (264 * (cappedScore / 100));
-        
+
         setTimeout(() => {
             ring.style.strokeDashoffset = offset;
         }, 50);
-        
+
         let currentNum = 0;
         const interval = setInterval(() => {
             if (currentNum >= cappedScore) {
@@ -272,7 +306,7 @@
 
         justList.innerHTML = '';
         if (justification) {
-            const reasons = justification.split(' | ');
+            const reasons = justification.split(', ');
             reasons.forEach(r => {
                 if (r.trim()) {
                     const li = document.createElement('li');
@@ -281,14 +315,14 @@
                 }
             });
         }
-        
+
         // Populate extracted data
         if (headers && urls) {
             document.getElementById('extracted-data').classList.remove('hidden');
             document.getElementById('ext-from').textContent = headers['From'] || 'N/A';
             document.getElementById('ext-subject').textContent = headers['Subject'] || 'N/A';
             document.getElementById('ext-date').textContent = headers['Date'] || 'N/A';
-            
+
             const urlsList = document.getElementById('ext-urls');
             urlsList.innerHTML = '';
             if (urls.length > 0) {

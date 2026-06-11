@@ -44,6 +44,16 @@ class EmailAnalyzer:
         if self.ml_model is None or self.ml_vectorizer is None:
             return None
         
+        # Skip ML classification on extremely short inputs (less than 8 words)
+        # to avoid false positive TF-IDF predictions on single words/phrases.
+        clean_text = re.sub(r'<[^>]+>', ' ', text)
+        words = [w for w in clean_text.split() if w.strip()]
+        if len(words) < 8:
+            return {
+                "is_spam": False,
+                "confidence": 0.0
+            }
+        
         try:
             text_vec = self.ml_vectorizer.transform([text])
             prediction = self.ml_model.predict(text_vec)[0]

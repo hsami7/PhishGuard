@@ -1,0 +1,23 @@
+Received: from mx.capitalone.verify-ssl.com (mx.capitalone.verify-ssl.com [198.51.100.22])
+	by mail.example.com (Postfix) with ESMTP id 7F2A3B4C5D
+	for <customer@example.com>; Thu, 11 Jun 2026 18:42:10 +0000 (UTC)
+From: "Capital One Alerts" <alerts@capitalone-verify-ssl.com>
+To: customer@example.com
+Subject: Verify your account now — unusual sign-in detected
+Date: Thu, 11 Jun 2026 18:42:00 +0000
+Message-ID: <co-alert-8821@capitalone-verify-ssl.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Dear Customer,
+
+We noticed an unusual sign-in to your account from an unrecognized device. To keep your account secure, please verify your identity immediately:
+
+[URL: http://secure-update.capitalone-verify-ssl.com/verify?id=8821&token=ABCD1234]
+
+[URL: http://198.51.100.44/confirm-login]
+
+If you did not sign in recently, your account may have been compromised. Please verify now or your account will be suspended.
+
+Thank you,
+Capital One Security Team

@@ -224,26 +224,32 @@ class EmailAnalyzer:
             "\U0001F300-\U0001F5FF"
             "\U0001F680-\U0001F6FF"
             "\U0001F1E0-\U0001F1FF"
-            "\U00002702-\U000027B0"
-            "\U000024C2-\U0001F251"
             "\U0001F900-\U0001F9FF"
             "\U0001FA00-\U0001FA6F"
             "\U0001FA70-\U0001FAFF"
-            "\U00002600-\U000026FF"
+            "\U00002702-\U000027B0"
+            "\U00002460-\U000024FF"  # Enclosed Alphanumerics (① ② ③ … ⓪)
+            "\U00002500-\U0000257F"  # Box Drawing
+            "\U00002580-\U0000259F"  # Block Elements
+            "\U00002600-\U000026FF"  # Misc Symbols
             "]+",
             flags=re.UNICODE,
         )
+
+        def _count_emojis(s: str) -> int:
+            """Count emoji groups; ignore HTML tags so markup doesn't inflate counts."""
+            cleaned = re.sub(r'<[^>]+>', ' ', s)
+            return len(emoji_pattern.findall(cleaned))
+
         full_text = f"{subject} {text_content}"
-        emoji_count = len(emoji_pattern.findall(full_text))
-        total_chars = len(full_text.strip())
-        if total_chars > 0:
-            emoji_density = emoji_count / total_chars
-            if emoji_density > 0.05 or emoji_count >= 5:
-                emoji_score = min(int(emoji_density * 200), 20)
-                score += emoji_score
-                explanation["content_flags"].append(
-                    f"High emoji density: {emoji_count} emojis ({emoji_density:.1%} of text) — typical of spam/scam"
-                )
+        emoji_count = _count_emojis(full_text)
+        word_count = len([w for w in re.split(r'\s+', full_text.strip()) if w])
+        if word_count > 0 and emoji_count >= 5:
+            emoji_score = min(int((emoji_count / word_count) * 2000), 20)
+            score += emoji_score
+            explanation["content_flags"].append(
+                f"High emoji density: {emoji_count} emojis across ~{word_count} words — typical of spam/scam"
+            )
 
         # ── 8. Suspicious URL Domain Patterns ──
         suspicious_domain_patterns = [
@@ -338,10 +344,19 @@ class EmailAnalyzer:
             or any("password" in s.lower() or "suspend" in s.lower() or "account closure" in s.lower()
                    for s in explanation["urgency"])
         )
-        spam_signals = (
+        # Separate strong spam signals from weak content flags
+        strong_spam_signals = (
             len(explanation["scam_keywords"]) > 0
-            or len(explanation["content_flags"]) > 0
             or any("numeric-heavy" in s.lower() for s in explanation["url_issues"])
+        )
+        weak_content_flags_only = (
+            len(explanation["content_flags"]) > 0
+            and not strong_spam_signals
+            and not phishing_signals
+            and len(explanation["spoofing"]) == 0
+            and len(explanation["suspicious_sender"]) == 0
+            and len(explanation["urgency"]) == 0
+            and len(explanation["url_issues"]) == 0
         )
         has_trust = len(explanation["brand_trust"]) > 0
 
@@ -354,7 +369,10 @@ class EmailAnalyzer:
             category = "spam_junk"
         elif score >= 70:
             category = "phishing"
-        elif spam_signals or score >= 30:
+        elif weak_content_flags_only and score < 40:
+            # Only content flags (emoji, greeting) with modest score — likely false positive
+            category = "legitimate"
+        elif strong_spam_signals or score >= 30:
             category = "spam_junk"
         elif has_trust and score < 30:
             category = "legitimate"

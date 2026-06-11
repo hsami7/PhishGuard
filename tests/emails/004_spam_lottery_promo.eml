@@ -1,0 +1,51 @@
+From: winners@lucky-draw-2026.xyz
+To: customer@example.com
+Subject: 🎉 Congratulations! You have been selected as today's lucky winner!
+Date: Thu, 11 Jun 2026 17:00:00 +0000
+Message-ID: <lucky-draw-4421@lucky-draw-2026.xyz>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+<div style="background: linear-gradient(135deg, #ff6b6b, #feca57); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+<h1 style="color: white; font-size: 28px; margin: 0; text-shadow: 2px px 4px rgba(0,0,0,0.3);">🎉</h1>
+<h2 style="color: white; font-size: 26px; margin: 10px 0 0 0;">YOU HAVE WON!</h2>
+</div>
+
+<div style="background-color: #f9f9f9; padding: 30px; border-radius: 10px; border: 2px dashed #feca57;">
+<h3 style="color: #e74c3c; font-size: 20px;">🏆 Lucky Draw Winner Notification 🏆</h3>
+
+<p>Dear Lucky Winner,</p>
+
+<p>We are thrilled to inform you that your email address has been <strong>RANDOMLY SELECTED</strong> as the winner of our international promotional draw! 🎊</p>
+
+<p>Your prize includes:</p>
+<ul>
+<li>💰 $5,000 USD Cash Prize</li>
+<li>✈️ Round-trip Business Class Tickets to Paris</li>
+<li>🏨 5-Star Hotel Accommodation (7 nights)</li>
+<li>📱 Latest Smartphone & Laptop</li>
+</ul>
+
+<p style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #feca57; border-radius: 5px;">
+<strong>⚠️ ACTION REQUIRED:</strong> To claim your prize, you must submit your claim within <strong>72 HOURS</strong>. Failure to claim will result in forfeiture!
+</p>
+
+<a href="http://lucky-winner-claim.xyz/claim?id=RES-WIN-8821-THR" style="display: inline-block; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);">
+🎁 CLAIM YOUR PRIZE NOW!
+</a>
+
+<p style="margin-top: 30px; font-size: 12px; color: #777;">
+This promotion is sponsored by the <strong>Global Marketing Association</strong>.  
+Reference: GMA-2026-LD-4421 | Winner ID: RES-WIN-8821-THR
+</p>
+</div>
+
+<div style="text-align: center; margin-top: 20px; font-size: 11px; color: #999;">
+<p>If you did not enter this draw, please disregard this email.</p>
+<p>© 2026 Lucky Draw International. All rights reserved.</p>
+</div>
+</body>
+</html>

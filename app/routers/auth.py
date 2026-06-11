@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
+from slowapi.util import get_remote_address
+from slowapi import Limiter
 from app.database import SessionLocal
 from app.models import User
 from app.schemas import UserCreate, UserResponse, Token
@@ -12,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+limiter = Limiter(key_func=get_remote_address)
+
 def get_db():
     db = SessionLocal()
     try:
@@ -20,11 +24,11 @@ def get_db():
         db.close()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user_create: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register(request: Request, user_create: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user_create.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
-    
     new_user = User(
         username=user_create.username,
         email=user_create.email,
@@ -38,7 +42,8 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/token", response_model=Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(

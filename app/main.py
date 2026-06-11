@@ -1,19 +1,29 @@
+import os
 from fastapi import FastAPI, Request, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.middleware import SlowAPIMiddleware
 from app.routers import auth, analysis
 from app.database import engine
 from app import models, security
 
-# 1. On initialise d'abord l'application FastAPI
+# Rate limiter: tracks requests per IP
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+
+# 1. Initialize FastAPI app
 app = FastAPI(title="PhishGuard Gateway")
 
-# 2. Maintenant on peut utiliser le décorateur @app sans NameError
+# 2. Add rate limiting middleware
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
+
+# 3. Startup: create DB tables
 @app.on_event("startup")
 def on_startup():
     models.Base.metadata.create_all(bind=engine)
-    
     import sqlite3
     try:
         conn = sqlite3.connect("phishguard.db")
@@ -28,7 +38,7 @@ def on_startup():
 app.include_router(auth.router)
 app.include_router(analysis.router)
 
-# Mount static files (ensure 'static' directory exists)
+# Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")

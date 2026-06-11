@@ -1,13 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 
 class UserBase(BaseModel):
-    username: str
+    username: str = Field(..., min_length=3, max_length=50)
 
 class UserCreate(UserBase):
-    email: str
-    password: str
+    email: str = Field(..., max_length=255)
+    password: str = Field(..., min_length=6, max_length=128)
     role: Optional[str] = "analyst"
 
 class UserResponse(UserBase):
@@ -24,15 +24,15 @@ class Token(BaseModel):
     token_type: str
 
 class EmailAnalysisRequest(BaseModel):
-    raw_email: str
+    raw_email: str = Field(..., max_length=50000, description="Raw .eml content, max 50KB")
 
 class EmailAnalysisResponse(BaseModel):
-    category: str                # "phishing" | "legitimate" | "spam_junk"
-    score_level: str             # "Low" | "Medium" | "High"
-    numeric_score: int           # 0-100
-    justification: str           # pipe-delimited summary
-    explanation: dict            # structured breakdown by detection type
-    explanation_text: str        # human-readable paragraph
+    category: str
+    score_level: str
+    numeric_score: int
+    justification: str
+    explanation: dict
+    explanation_text: str
     headers: dict
     urls: list[str]
 

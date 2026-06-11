@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from proto import analyzer_pb2 as proto_dot_analyzer__pb2
+from protos import analyzer_pb2 as protos_dot_analyzer__pb2
 
 GRPC_GENERATED_VERSION = '1.81.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in proto/analyzer_pb2_grpc.py depends on'
+        + ' but the generated code in protos/analyzer_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,8 +36,8 @@ class AnalysisServiceStub:
         """
         self.AnalyzeEmail = channel.unary_unary(
                 '/analyzer.AnalysisService/AnalyzeEmail',
-                request_serializer=proto_dot_analyzer__pb2.EmailRequest.SerializeToString,
-                response_deserializer=proto_dot_analyzer__pb2.AnalyzeResponse.FromString,
+                request_serializer=protos_dot_analyzer__pb2.EmailRequest.SerializeToString,
+                response_deserializer=protos_dot_analyzer__pb2.AnalyzeResponse.FromString,
                 _registered_method=True)
 
 
@@ -55,8 +55,8 @@ def add_AnalysisServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'AnalyzeEmail': grpc.unary_unary_rpc_method_handler(
                     servicer.AnalyzeEmail,
-                    request_deserializer=proto_dot_analyzer__pb2.EmailRequest.FromString,
-                    response_serializer=proto_dot_analyzer__pb2.AnalyzeResponse.SerializeToString,
+                    request_deserializer=protos_dot_analyzer__pb2.EmailRequest.FromString,
+                    response_serializer=protos_dot_analyzer__pb2.AnalyzeResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -84,8 +84,8 @@ class AnalysisService:
             request,
             target,
             '/analyzer.AnalysisService/AnalyzeEmail',
-            proto_dot_analyzer__pb2.EmailRequest.SerializeToString,
-            proto_dot_analyzer__pb2.AnalyzeResponse.FromString,
+            protos_dot_analyzer__pb2.EmailRequest.SerializeToString,
+            protos_dot_analyzer__pb2.AnalyzeResponse.FromString,
             options,
             channel_credentials,
             insecure,

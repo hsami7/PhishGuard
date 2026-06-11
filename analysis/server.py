@@ -7,8 +7,8 @@ import json
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from proto import analyzer_pb2
-from proto import analyzer_pb2_grpc
+from protos import analyzer_pb2
+from protos import analyzer_pb2_grpc
 from analysis.heuristics import EmailAnalyzer
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -3,8 +3,8 @@ import os
 import grpc
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from proto import analyzer_pb2
-from proto import analyzer_pb2_grpc
+from protos import analyzer_pb2
+from protos import analyzer_pb2_grpc
 
 def run():
     with grpc.insecure_channel('localhost:50051') as channel:

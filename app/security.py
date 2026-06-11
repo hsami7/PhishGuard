@@ -1,3 +1,4 @@
+import os
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
@@ -7,10 +8,10 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import User
 
-# In production, load this from env variable!
-SECRET_KEY = "SUPER_SECRET_KEY_FOR_PHASE_2"
+# Load from env variable — fallback to default for local dev only
+SECRET_KEY = os.environ.get("PHISHGUARD_SECRET_KEY", "SUPER_SECRET_KEY_CHANGE_IN_PRODUCTION_2026")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("PHISHGUARD_TOKEN_EXPIRE_MINUTES", "30"))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
@@ -51,13 +52,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
     user = db.query(User).filter(User.username == username).first()
     if user is None:
         raise credentials_exception
     return user
 
-async def get_current_admin_user(current_user: models.User = Depends(get_current_user)):
+async def get_current_admin_user(current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

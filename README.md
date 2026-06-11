@@ -41,7 +41,7 @@ python analysis/server.py
 
 **Terminal 2 (Start the FastAPI Gateway):**
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 uvicorn app.main:app --reload
 ```
 *You should see standard uvicorn logs.*

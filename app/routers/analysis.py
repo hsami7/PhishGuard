@@ -21,26 +21,34 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 
+from analysis.parser import parse_email
+
 @router.post("/", response_model=EmailAnalysisResponse)
 def analyze_email(request: EmailAnalysisRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
-        logger.info(f"User '{current_user.username}' requested analysis for sender: {request.sender}")
+        parsed = parse_email(request.raw_email)
+        sender = parsed["headers"].get("From", "")
+        subject = parsed["headers"].get("Subject", "")
+        text_content = parsed["body_text"]
+        urls = parsed["urls"]
+
+        logger.info(f"User '{current_user.username}' requested analysis for sender: {sender}")
         with grpc.insecure_channel('localhost:50051') as channel:
             stub = analyzer_pb2_grpc.AnalysisServiceStub(channel)
             
             grpc_req = analyzer_pb2.EmailRequest(
-                sender=request.sender,
-                subject=request.subject,
-                text_content=request.text_content,
-                urls=request.urls
+                sender=sender,
+                subject=subject,
+                text_content=text_content,
+                urls=urls
             )
             
             response = stub.AnalyzeEmail(grpc_req)
             
             history_record = models.AnalysisHistory(
                 user_id=current_user.id,
-                sender=request.sender,
-                subject=request.subject,
+                sender=sender,
+                subject=subject,
                 score_level=response.score_level,
                 numeric_score=response.numeric_score
             )
@@ -50,7 +58,9 @@ def analyze_email(request: EmailAnalysisRequest, current_user: User = Depends(ge
             return EmailAnalysisResponse(
                 score_level=response.score_level,
                 numeric_score=response.numeric_score,
-                justification=response.justification
+                justification=response.justification,
+                headers=parsed["headers"],
+                urls=urls
             )
     except grpc.RpcError as e:
         logger.error(f"gRPC service unavailable: {e}")

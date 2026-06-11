@@ -24,15 +24,14 @@ class Token(BaseModel):
     token_type: str
 
 class EmailAnalysisRequest(BaseModel):
-    sender: str
-    subject: str
-    text_content: str
-    urls: list[str]
+    raw_email: str
 
 class EmailAnalysisResponse(BaseModel):
     score_level: str
     numeric_score: int
     justification: str
+    headers: dict
+    urls: list[str]
 
 class AnalysisHistoryResponse(BaseModel):
     id: int

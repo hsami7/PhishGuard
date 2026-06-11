@@ -1,13 +1,13 @@
 # PhishGuard Email Classification Report
-_Generated: 2026-06-11 20:07 UTC_
+_Generated: 2026-06-11 21:45 UTC_
 
 ## Executive Summary
 
 - Total test cases: **4**
-- Passed: **3**
-- Failed: **1**
-- Pass rate: **75.0%**
-- Avg response time: **564 ms**
+- Passed: **4**
+- Failed: **0**
+- Pass rate: **100.0%**
+- Avg response time: **1308 ms**
 
 ## Test Cases
 
@@ -15,8 +15,8 @@ _Generated: 2026-06-11 20:07 UTC_
 - Expected category: **phishing**
 - Actual category: **phishing**
 - Expected score: **High**
-- Actual: **High (72)**
-- Duration: **104 ms**
+- Actual: **Medium (69)**
+- Duration: **83 ms**
 - Status: **✅ PASS**
 
 #### Analysis Explanation
@@ -25,7 +25,6 @@ _Generated: 2026-06-11 20:07 UTC_
 This email shows strong signs of a phishing attempt.
 What triggered this classification:
 • Urgency tactics: 'urgent' in subject, 'suspend' in body, 'verify' in body
-• Content flags: High emoji density: 8 emojis (1.8% of text) — typical of spam/scam
 • ML analysis: ML model flagged as phishing (98.4% confidence)
 ```
 
@@ -34,7 +33,7 @@ What triggered this classification:
 - Actual category: **phishing**
 - Expected score: **High**
 - Actual: **High (100)**
-- Duration: **2106 ms**
+- Duration: **5051 ms**
 - Status: **✅ PASS**
 
 #### Analysis Explanation
@@ -50,18 +49,17 @@ What triggered this classification:
 
 ### 003_legitimate_internal
 - Expected category: **legitimate**
-- Actual category: **spam_junk**
+- Actual category: **legitimate**
 - Expected score: **Low**
-- Actual: **Medium (34)**
+- Actual: **Low (29)**
 - Duration: **18 ms**
-- Status: **❌ FAIL**
+- Status: **✅ PASS**
 
 #### Analysis Explanation
 
 ```
-This email appears to be spam or unsolicited junk.
+This email appears to be legitimate.
 What triggered this classification:
-• Content flags: High emoji density: 12 emojis (2.7% of text) — typical of spam/scam
 • ML analysis: ML model flagged as phishing (97.8% confidence)
 ```
 
@@ -70,7 +68,7 @@ What triggered this classification:
 - Actual category: **spam_junk**
 - Expected score: **High**
 - Actual: **Medium (69)**
-- Duration: **30 ms**
+- Duration: **79 ms**
 - Status: **✅ PASS**
 
 #### Analysis Explanation
@@ -85,7 +83,7 @@ What triggered this classification:
 
 ## Recommendations
 
-- Review category decision thresholds to handle edge cases like weak heuristic + strong ML confidence.
+- No issues detected; expand corpus with adversarial examples and brand-trust edge cases.
 
 ---
 

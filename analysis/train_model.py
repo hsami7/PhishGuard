@@ -36,7 +36,7 @@ def train():
     y_val = df_val["Email Type"].map(label_map).astype(int).tolist()
     print(f"Loaded {len(X_val)} validation records.")
 
-    # 3. Load newly downloaded Phishing_Email.csv dataset (large dataset)
+    # 4. Load newly downloaded Phishing_Email.csv dataset (large dataset)
     phish_email_path = os.path.join(current_dir, "..", "data", "Phishing_Email.csv")
     X_phish = []
     y_phish = []
@@ -48,7 +48,55 @@ def train():
         y_phish = df_phish["Email Type"].map(label_map).astype(int).tolist()
         print(f"Loaded {len(X_phish)} records from Phishing Email dataset.")
 
-    # 4. Load Hugging Face texts.json (repaired JSON parsing)
+    # 5. Load Kaggle emails directory (newly downloaded)
+    kaggle_dir = os.path.join(current_dir, "..", "data", "kaggle_emails")
+    X_kaggle = []
+    y_kaggle = []
+    if os.path.exists(kaggle_dir):
+        print(f"Loading Kaggle email datasets from: {kaggle_dir}")
+        for filename in sorted(os.listdir(kaggle_dir)):
+            if filename.endswith(".csv"):
+                file_path = os.path.join(kaggle_dir, filename)
+                try:
+                    df_k = pd.read_csv(file_path)
+                    cols = list(df_k.columns)
+                    text_col = None
+                    label_col = None
+                    for c in cols:
+                        if c.lower() in ["text_combined", "text", "body", "email text"]:
+                            text_col = c
+                        if c.lower() in ["label", "email type", "type", "status"]:
+                            label_col = c
+                    
+                    if text_col and label_col:
+                        df_k = df_k.dropna(subset=[text_col, label_col])
+                        texts = df_k[text_col].tolist()
+                        labels = df_k[label_col].tolist()
+                        mapped_labels = []
+                        for val in labels:
+                            if val in [0, 1, "0", "1"]:
+                                mapped_labels.append(int(val))
+                            elif str(val).lower() in ["safe email", "ham", "legitimate"]:
+                                mapped_labels.append(0)
+                            elif str(val).lower() in ["phishing email", "spam", "phishing"]:
+                                mapped_labels.append(1)
+                            else:
+                                mapped_labels.append(None)
+                                
+                        valid_x = []
+                        valid_y = []
+                        for txt, lbl in zip(texts, mapped_labels):
+                            if lbl is not None:
+                                valid_x.append(txt)
+                                valid_y.append(lbl)
+                                
+                        X_kaggle.extend(valid_x)
+                        y_kaggle.extend(valid_y)
+                        print(f"  Loaded {len(valid_x)} records from {filename}.")
+                except Exception as e:
+                    print(f"  Failed to load {filename}: {e}")
+
+    # 6. Load Hugging Face texts.json (repaired JSON parsing)
     hf_path = os.path.join(current_dir, "..", "data", "texts.json")
     X_hf = []
     y_hf = []
@@ -71,8 +119,8 @@ def train():
                 print(f"Failed to parse Hugging Face dataset: {e}")
 
     # Combine datasets
-    X = X_orig + X_val + X_phish + X_hf
-    y = np.array(y_orig + y_val + y_phish + y_hf)
+    X = X_orig + X_val + X_phish + X_kaggle + X_hf
+    y = np.array(y_orig + y_val + y_phish + y_kaggle + y_hf)
     print(f"Combined dataset: Total records = {len(X)}")
     
     # Split data

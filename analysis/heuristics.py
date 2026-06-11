@@ -228,8 +228,25 @@ class EmailAnalyzer:
                     f"ML classifier: Likely legitimate ({(1 - ml_result['confidence'])*100:.1f}% confidence)"
                 )
 
-        # Cap score at 100
-        score = min(score, 100)
+        # Legitimate Brand Trust Heuristic
+        display_name, email_addr = email.utils.parseaddr(sender)
+        sender_domain = email_addr.split('@')[-1].lower() if email_addr and '@' in email_addr else ""
+        high_profile_domains = ['paypal.com', 'apple.com', 'microsoft.com', 'google.com', 'amazon.com', 'chase.com', 'netflix.com']
+        if sender_domain in high_profile_domains:
+            all_links_match = True
+            for original_url in urls:
+                clean_url = original_url.lower()
+                clean_url = re.sub(r'^https?://(www\.)?', '', clean_url)
+                link_domain = clean_url.split('/')[0]
+                if not (link_domain == sender_domain or link_domain.endswith('.' + sender_domain)):
+                    all_links_match = False
+                    break
+            if all_links_match:
+                score -= 40
+                justifications.append("Legitimate Brand Trust: Sender domain matches all link destinations")
+
+        # Cap score between 0 and 100
+        score = max(0, min(score, 100))
 
         # Determine level
         if score < 30:

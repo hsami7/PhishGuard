@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import os
+import json
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -35,9 +36,31 @@ def train():
     y_val = df_val["Email Type"].map(label_map).astype(int).tolist()
     print(f"Loaded {len(X_val)} validation records.")
 
+    # 3. Load Hugging Face texts.json (repaired JSON parsing)
+    hf_path = os.path.join(current_dir, "..", "data", "texts.json")
+    X_hf = []
+    y_hf = []
+    if os.path.exists(hf_path):
+        print(f"Loading Hugging Face dataset from: {hf_path}")
+        with open(hf_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+        
+        last_brace = content.rfind('}')
+        if last_brace != -1:
+            valid_json = content[:last_brace+1] + '\n]'
+            try:
+                data = json.loads(valid_json)
+                for item in data:
+                    if "text" in item and "label" in item:
+                        X_hf.append(item["text"])
+                        y_hf.append(int(item["label"]))
+                print(f"Loaded {len(X_hf)} records from Hugging Face dataset.")
+            except Exception as e:
+                print(f"Failed to parse Hugging Face dataset: {e}")
+
     # Combine datasets
-    X = X_orig + X_val
-    y = np.array(y_orig + y_val)
+    X = X_orig + X_val + X_hf
+    y = np.array(y_orig + y_val + y_hf)
     print(f"Combined dataset: Total records = {len(X)}")
     
     # Split data
@@ -50,9 +73,10 @@ def train():
     X_train_vec = vectorizer.fit_transform(X_train)
     X_test_vec = vectorizer.transform(X_test)
     
-    # Train Logistic Regression Model
-    print("Training Logistic Regression model...")
-    model = LogisticRegression(max_iter=1000, C=1.0, random_state=42)
+    # Train Logistic Regression Model with L1 Regularization (Lasso)
+    # L1 penalty performs feature selection by driving weights of irrelevant features to 0.
+    print("Training Logistic Regression model with L1 feature selection...")
+    model = LogisticRegression(max_iter=1000, C=1.0, penalty="l1", solver="liblinear", random_state=42)
     model.fit(X_train_vec, y_train)
     
     # Evaluate model

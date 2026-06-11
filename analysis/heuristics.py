@@ -10,8 +10,9 @@ logger = logging.getLogger(__name__)
 
 class EmailAnalyzer:
     def __init__(self):
-        self.suspicious_tlds = ['.xyz', '.top', '.click', '.club', '.ru', '.cn']
+        self.suspicious_tlds = ['.xyz', '.top', '.click', '.club', '.ru', '.cn', '.tk', '.ml', '.ga', '.cf', '.gq', '.pw', '.work', '.loan', '.men', '.review', '.stream', '.bid', '.win', '.date', '.racing', '.buzz', '.vip', '.party', '.trade', '.webcam', '.cricket', '.link', '.click', '.download', '.racing', '.science', '.trade']
         self.urgency_keywords = ['urgent', 'immediate', 'password', 'bank', 'suspend', 'action required', 'verify', 'account closure']
+        self.scam_keywords = ['passive income', 'daily returns', 'commission', 'invite friends', 'referral', 'guaranteed', 'risk-free', 'no experience', 'work from home', 'earn daily', 'earn passive', 'pyramid', 'ponzi', 'investment opportunity', 'double your money', 'get rich', 'financial freedom', 'limited spots', 'act now', 'join now', 'sign up bonus', 'mining', 'staking', 'apy', 'apy%', 'usdt', 'bitcoin investment', 'crypto investment', 'quant trading', 'trading bot', 'automated trading']
         
         # Load ML model and vectorizer
         self.ml_model = None
@@ -194,6 +195,57 @@ class EmailAnalyzer:
         if "dear customer" in body_lower or "dear user" in body_lower:
             score += 10
             justifications.append("Generic greeting detected")
+
+        # ── Scam / Investment Fraud Keyword Detection ──
+        scam_hits = []
+        for keyword in self.scam_keywords:
+            if keyword in body_lower:
+                scam_hits.append(keyword)
+            elif keyword in subject_lower:
+                scam_hits.append(keyword)
+        if scam_hits:
+            scam_score = min(len(scam_hits) * 15, 45)  # cap at 45
+            score += scam_score
+            justifications.append(f"Scam keywords detected: {', '.join(scam_hits[:5])}")
+
+        # ── Emoji Density Detection (spam/scam indicator) ──
+        emoji_pattern = re.compile(
+            "["
+            "\U0001F600-\U0001F64F"  # emoticons
+            "\U0001F300-\U0001F5FF"  # symbols & pictographs
+            "\U0001F680-\U0001F6FF"  # transport & map
+            "\U0001F1E0-\U0001F1FF"  # flags
+            "\U00002702-\U000027B0"  # dingbats
+            "\U000024C2-\U0001F251"  # enclosed chars
+            "\U0001F900-\U0001F9FF"  # supplemental symbols
+            "\U0001FA00-\U0001FA6F"  # chess symbols
+            "\U0001FA70-\U0001FAFF"  # symbols extended
+            "\U00002600-\U000026FF"  # misc symbols
+            "]+",
+            flags=re.UNICODE,
+        )
+        full_text = f"{subject} {text_content}"
+        emoji_count = len(emoji_pattern.findall(full_text))
+        total_chars = len(full_text.strip())
+        if total_chars > 0:
+            emoji_density = emoji_count / total_chars
+            if emoji_density > 0.05 or emoji_count >= 5:  # >5% or 5+ emojis
+                emoji_score = min(int(emoji_density * 200), 20)
+                score += emoji_score
+                justifications.append(f"High emoji density ({emoji_count} emojis, {emoji_density:.1%}) — common in spam/scam")
+
+        # ── Suspicious URL Domain Patterns ──
+        suspicious_domain_patterns = [
+            r'\d{5,}\.com',        # mostly numeric domains like 866698.com
+            r'\d{4,}[a-z]+\.com',  # mixed alphanumeric
+        ]
+        for url in urls:
+            domain = re.sub(r'^https?://(www\.)?', '', url.lower()).split('/')[0]
+            for pattern in suspicious_domain_patterns:
+                if re.search(pattern, domain):
+                    score += 20
+                    justifications.append(f"Numeric-heavy domain '{domain}' — common in scam URLs")
+                    break
 
         # URL Heuristics
         if len(urls) > 3:

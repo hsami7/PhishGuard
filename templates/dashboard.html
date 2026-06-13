@@ -138,13 +138,42 @@
 
     <!-- History Table -->
     <div class="mt-12 glass-panel rounded-2xl p-6 shadow-xl">
-        <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            Recent Analyses
-        </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Recent Analyses
+            </h2>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <input type="text" id="history-search-keyword"
+                    class="px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-full sm:w-48"
+                    placeholder="Search keyword...">
+                <input type="text" id="history-search-sender"
+                    class="px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-full sm:w-40"
+                    placeholder="Sender...">
+                <select id="history-search-category"
+                    class="px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-full sm:w-36">
+                    <option value="">All categories</option>
+                    <option value="phishing">Phishing</option>
+                    <option value="spam_junk">Spam/Junk</option>
+                    <option value="legitimate">Legitimate</option>
+                    <option value="unknown">Unknown</option>
+                </select>
+                <button id="history-search-btn"
+                    class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 transition-colors whitespace-nowrap">
+                    Search
+                </button>
+                <button id="history-clear-btn"
+                    class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors whitespace-nowrap">
+                    Clear
+                </button>
+            </div>
+        </div>
+        <div id="history-empty" class="hidden text-center py-8 text-slate-500 text-sm">
+            No analyses found matching your search.
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -174,20 +203,54 @@
         }
     });
 
-    async function loadHistory() {
+    async function loadHistory(filters = {}) {
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch('/analysis/history', {
+            const params = new URLSearchParams();
+            if (filters.sender) params.set('sender', filters.sender);
+            if (filters.category) params.set('category', filters.category);
+            if (filters.keyword) params.set('keyword', filters.keyword);
+            const qs = params.toString() ? '?' + params.toString() : '';
+            const res = await fetch('/analysis/history' + qs, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
                 const data = await res.json();
                 renderHistory(data);
+                // Show/hide empty state
+                const emptyEl = document.getElementById('history-empty');
+                if (emptyEl) {
+                    emptyEl.classList.toggle('hidden', data.length > 0);
+                }
             }
         } catch (e) {
             console.error("Failed to load history", e);
         }
     }
+
+    // History search
+    function doHistorySearch() {
+        const sender = document.getElementById('history-search-sender').value.trim();
+        const category = document.getElementById('history-search-category').value;
+        const keyword = document.getElementById('history-search-keyword').value.trim();
+        loadHistory({ sender, category, keyword });
+    }
+
+    function clearHistorySearch() {
+        document.getElementById('history-search-sender').value = '';
+        document.getElementById('history-search-category').value = '';
+        document.getElementById('history-search-keyword').value = '';
+        loadHistory();
+    }
+
+    document.getElementById('history-search-btn').addEventListener('click', doHistorySearch);
+    document.getElementById('history-clear-btn').addEventListener('click', clearHistorySearch);
+    // Enter key triggers search
+    ['history-search-keyword', 'history-search-sender'].forEach(id => {
+        document.getElementById(id).addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') doHistorySearch();
+        });
+    });
 
     function renderHistory(records) {
         const tbody = document.getElementById('history-tbody');

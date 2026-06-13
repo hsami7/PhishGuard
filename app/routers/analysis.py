@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 import grpc
 import sys
 import os
@@ -17,6 +17,27 @@ from protos import analyzer_pb2
 from protos import analyzer_pb2_grpc
 import logging
 
+# Audit client for analysis events
+def _audit_log(event_type: str, username: str = "", details: str = "", ip: str = "unknown"):
+    """Send audit event to AuditService. Never raises — best effort only."""
+    try:
+        from protos import audit_pb2 as audit_msg, audit_pb2_grpc as audit_grpc
+        with grpc.insecure_channel('localhost:50052', options=[('grpc.enable_retries', 0)]) as channel:
+            stub = audit_grpc.AuditServiceStub(channel)
+            stub.LogEvent(audit_msg.AuditEvent(
+                event_type=event_type, username=username,
+                details=details[:500], ip_address=ip
+            ), timeout=2)
+    except Exception:
+        pass
+
+
+def _get_client_ip(request) -> str:
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
@@ -24,7 +45,7 @@ router = APIRouter(prefix="/analysis", tags=["analysis"])
 from analysis.parser import parse_email
 
 @router.post("/", response_model=EmailAnalysisResponse)
-def analyze_email(request: EmailAnalysisRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def analyze_email(http_request: Request, request: EmailAnalysisRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         parsed = parse_email(request.raw_email)
         # Use explicit sender if provided, otherwise fall back to parser-extracted From header
@@ -77,6 +98,8 @@ def analyze_email(request: EmailAnalysisRequest, current_user: User = Depends(ge
             )
     except grpc.RpcError as e:
         logger.error(f"gRPC service unavailable: {e}")
+        _audit_log("SERVICE_ERROR", username=current_user.username,
+                   details=f"gRPC AnalysisService unavailable: {e}", ip=_get_client_ip(http_request))
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Analysis service is currently unavailable. Please try again later."

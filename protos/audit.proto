@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package audit;
+
+service AuditService {
+  rpc LogEvent(AuditEvent) returns (AuditResponse);
+}
+
+message AuditEvent {
+  string event_type = 1;
+  string username = 2;
+  string details = 3;
+  string ip_address = 4;
+}
+
+message AuditResponse {
+  bool success = 1;
+  string message = 2;
+}

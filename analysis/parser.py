@@ -3,7 +3,7 @@ from email import policy
 import re
 from typing import Dict, Any, List
 
-URL_REGEX = re.compile(r'(?i)\bhttps?://[^\s<>"\'{}|\\^`]+')
+URL_REGEX = re.compile(r'(?i)\bhttps?://[^\s<>"\'{}\\\^`\)\]]+')
 
 def preprocess_raw_email(raw_content: str) -> str:
     """

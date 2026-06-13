@@ -27,7 +27,8 @@ from analysis.parser import parse_email
 def analyze_email(request: EmailAnalysisRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         parsed = parse_email(request.raw_email)
-        sender = parsed["headers"].get("From", "")
+        # Use explicit sender if provided, otherwise fall back to parser-extracted From header
+        sender = request.sender.strip() if request.sender and request.sender.strip() else parsed["headers"].get("From", "")
         subject = parsed["headers"].get("Subject", "")
         text_content = parsed["body_text"]
         urls = parsed["urls"]
@@ -71,7 +72,8 @@ def analyze_email(request: EmailAnalysisRequest, current_user: User = Depends(ge
                 explanation=explanation,
                 explanation_text=response.explanation_text,
                 headers=parsed["headers"],
-                urls=urls
+                urls=urls,
+                resolved_sender=sender
             )
     except grpc.RpcError as e:
         logger.error(f"gRPC service unavailable: {e}")

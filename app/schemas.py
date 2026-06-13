@@ -25,6 +25,7 @@ class Token(BaseModel):
 
 class EmailAnalysisRequest(BaseModel):
     raw_email: str = Field(..., max_length=50000, description="Raw .eml content, max 50KB")
+    sender: Optional[str] = Field(None, max_length=500, description="Optional explicit sender override (e.g. 'Name <email@.com>'). If provided, used instead of parser-extracted From header.")
 
 class EmailAnalysisResponse(BaseModel):
     category: str
@@ -35,6 +36,7 @@ class EmailAnalysisResponse(BaseModel):
     explanation_text: str
     headers: dict
     urls: list[str]
+    resolved_sender: str = ""
 
 class AnalysisHistoryResponse(BaseModel):
     id: int

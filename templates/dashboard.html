@@ -278,11 +278,12 @@
 
             const data = await res.json();
             resContainer.classList.remove('animate-pulse');
-            renderScore(data.score_level, data.numeric_score, data.category, data.justification, data.headers, data.urls);
+            renderScore(data.score_level, data.numeric_score, data.category, data.justification, data.headers, data.urls, data.resolved_sender);
             loadHistory();
         } catch (err) {
+            console.error('Analysis error:', err);
             resContainer.classList.remove('animate-pulse');
-            alert('Failed to analyze email. Is the backend running?');
+            alert('Failed to analyze email: ' + (err.message || 'Unknown error. Is the backend running?'));
             document.getElementById('placeholder-state').innerHTML = '<svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg><p class="text-slate-400 text-sm">Submit an email to view the heuristic score.</p>';
         } finally {
             btn.textContent = 'Run Analysis';
@@ -290,7 +291,7 @@
         }
     });
 
-    function renderScore(level, numScore, category, justification, headers, urls) {
+    function renderScore(level, numScore, category, justification, headers, urls, resolvedSender) {
         document.getElementById('placeholder-state').classList.add('hidden');
         document.getElementById('active-state').classList.remove('hidden');
 
@@ -351,7 +352,7 @@
         if (headers && urls) {
             document.getElementById('extracted-data').classList.remove('hidden');
             // Show resolved sender (may come from explicit input or parser)
-            const displaySender = data.resolved_sender || headers['From'] || 'N/A';
+            const displaySender = resolvedSender || headers['From'] || 'N/A';
             document.getElementById('ext-from').textContent = displaySender;
             document.getElementById('ext-subject').textContent = headers['Subject'] || 'N/A';
             document.getElementById('ext-date').textContent = headers['Date'] || 'N/A';
